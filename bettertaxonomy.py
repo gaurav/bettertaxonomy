@@ -110,7 +110,7 @@ for input in args.input:
         if name in internal_corrections:
             matched_scname = internal_corrections[name].get('correctName')
             matched_acname = internal_corrections[name].get('correctAcceptedName')
-            matched_url = "//internal"
+            matched_url = "internal"
             matched_source = "internal (as of " + timestamp + ")"
 
             count_internal+=1
@@ -122,7 +122,14 @@ for input in args.input:
                 matched_scname = matches[0]['scientificName']
                 if 'accepted' in matches[0].keys():
                     matched_acname = matches[0]['accepted']
-                matched_url = gbif_api.get_url_for_id(matches[0]['nubKey'])
+
+                id = '0'
+                if 'nubKey' in matches[0].keys():
+                    id = matches[0]['nubKey']
+                elif 'key' in matches[0].keys():
+                    id = matches[0]['key']
+
+                matched_url = gbif_api.get_url_for_id(id)
                 matched_source = ("GBIF API queried for Mammal Species "
                     "of the World ('672aca30-f1b5-43d3-8a2b-c1606125fa1b') on " +
                     timestamp)
@@ -158,9 +165,12 @@ for input in args.input:
 
         # print "Row to write: " + str(row)
         for k,v in row.items():
-            # print k
             if v is not None:
-                row[k] = v.encode('utf8')
+                try:
+                    row[k] = v.encode('utf8')
+                except UnicodeDecodeError as e:
+                    sys.stderr.write("UnicodeDecodeError while transforming '" + v + "' (key " + k + "): " + str(e) + "\n")
+                    row[k] = "(UnicodeDecodeError)"
         output.writerow(row)
         row_count+=1
 
