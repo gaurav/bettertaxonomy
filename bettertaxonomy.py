@@ -1,10 +1,12 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import argparse
+import codecs
 import datetime
-import gbif_api
 import csv
 import sys
+
+import gbif_api
 
 # Start a timer.
 time_start = datetime.datetime.now()
@@ -13,7 +15,7 @@ time_start = datetime.datetime.now()
 cmdline = argparse.ArgumentParser(description = 'Match species names')
 cmdline.add_argument('input', 
     nargs='*', 
-    type=argparse.FileType('r'),
+    type=argparse.FileType(mode='r', encoding='utf-8'),
     help='A CSV or plain text file containing species names',
     default = [sys.stdin])
 # TODO: Add support for multiple fieldnames.
@@ -81,7 +83,8 @@ for input in args.input:
  
     # Check for a field with names.
     if header.count(args.fieldname) == 0:
-        print "Error: could not find field '{0:s}' in file".format(args.fieldname)
+        # print "Error: could not find field '{}' in file".format(args.fieldname)
+        print("Error: could not find field '{}' in file".format(args.fieldname))
         exit(1)
     
     # Create new columns for output:
@@ -96,6 +99,7 @@ for input in args.input:
     output_header.insert(output_header.index(args.fieldname) + 4, 'matched_source')
    
     # Create a csv.writer for rewriting this file to output.
+    # sys.stdout = codecs.getwriter(sys.stdout.encoding)(sys.stdout)
     output = csv.DictWriter(sys.stdout, output_header, dialect)
     output.writeheader()
 
@@ -167,13 +171,6 @@ for input in args.input:
         row['matched_source'] = matched_source
 
         # print "Row to write: " + str(row)
-        for k,v in row.items():
-            if v is not None:
-                try:
-                    row[k] = v.encode('utf8')
-                except UnicodeDecodeError as e:
-                    sys.stderr.write("UnicodeDecodeError while transforming '" + v + "' (key " + k + "): " + str(e) + "\n")
-                    row[k] = "(UnicodeDecodeError)"
         output.writerow(row)
         row_count+=1
 
