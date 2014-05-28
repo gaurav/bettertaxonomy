@@ -1,4 +1,5 @@
 latin,count
+A.,-1
 Eutamias minimus,10
 Panthera tigris,20
 Felis tigris,30

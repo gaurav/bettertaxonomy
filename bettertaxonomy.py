@@ -51,6 +51,13 @@ timestamp = datetime.datetime.now().strftime("%x")
 # unmatched_names: a list of names that could not be matched.
 unmatched_names = []
 
+row_count = 0
+
+count_internal = 0
+count_msw = 0
+count_taxrefine = 0
+count_unmatched = 0
+
 for input in args.input:
     # Try to Sniff the CSV type; otherwise, assume it's a plain-text
     # tab-delimited file (excel_tab).
@@ -105,6 +112,8 @@ for input in args.input:
             matched_acname = internal_corrections[name].get('correctAcceptedName')
             matched_url = "//internal"
             matched_source = "internal (as of " + timestamp + ")"
+
+            count_internal+=1
         else:
             # Try Mammal Species of the World.
             matches = gbif_api.get_matches(name, '672aca30-f1b5-43d3-8a2b-c1606125fa1b')
@@ -117,6 +126,8 @@ for input in args.input:
                 matched_source = ("GBIF API queried for Mammal Species "
                     "of the World ('672aca30-f1b5-43d3-8a2b-c1606125fa1b') on " +
                     timestamp)
+
+                count_msw+=1
             else: 
                 # Try TaxRefine.
                 matches = gbif_api.get_matches_from_taxrefine(name)
@@ -127,8 +138,18 @@ for input in args.input:
                         matched_acname = matches[0]['summary']['accepted']
                     matched_url = gbif_api.get_url_for_id(matches[0]['id'])
                     matched_source = "TaxRefine/GBIF API queried on " + timestamp
+
+                    count_taxrefine+=1
                 else: 
                     unmatched_names.append(name)
+
+                    count_unmatched+=1
+
+        # scname and acname might be dicts, with (key: key_count) pairs.
+        if type(matched_scname) == dict:
+            matched_scname = sorted(matched_scname, key=matched_scname.get)[0]
+        if type(matched_acname) == dict:
+            matched_acname = sorted(matched_acname, key=matched_acname.get)[0]
 
         row['matched_scname'] = matched_scname
         row['matched_acname'] = matched_acname
@@ -136,8 +157,12 @@ for input in args.input:
         row['matched_source'] = matched_source
 
         # print "Row to write: " + str(row)
-
+        for k,v in row.items():
+            # print k
+            if v is not None:
+                row[k] = v.encode('utf8')
         output.writerow(row)
+        row_count+=1
 
 if args.internal and len(unmatched_names) > 0:
     internal_file = open(args.internal, mode="a")
@@ -152,3 +177,25 @@ if args.internal and len(unmatched_names) > 0:
         writer.writerow(dict_row)
 
     internal_file.close()
+
+# Report.
+filenames = []
+for file in args.input:
+    filenames.append(file.name)
+
+sys.stderr.write("""
+ - Processed on %s on file(s) %s
+ - Rows with names processed: %d
+ - Names matched against the internal database: %d (%.2f%%)
+ - Names matched against Mammal Species of the World: %d (%.2f%%)
+ - Names matched against TaxRefine: %d (%.2f%%)
+ - Names that could not be matched against any checklist: %d (%.2f%%)
+""" % (
+    timestamp,
+    ', '.join(filenames),
+    row_count,
+    count_internal, (float(count_internal)/row_count * 100),
+    count_msw, (float(count_msw)/row_count * 100),
+    count_taxrefine, (float(count_taxrefine)/row_count * 100),
+    count_unmatched, (float(count_unmatched)/row_count * 100),
+))
