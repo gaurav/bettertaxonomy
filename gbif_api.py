@@ -6,13 +6,18 @@ import requests
 
 gbif_api_root = "http://api.gbif.org/v0.9";
 
-def get_matches(name, datasets = []):
+def get_matches(name, dataset = None):
     url = gbif_api_root + "/species"
 
-    response = requests.get(url, params={
+    params={
         'name': name,
         'strict': 'true'
-    })
+    }
+
+    if dataset is not None:
+        params['datasetKey'] = dataset
+
+    response = requests.get(url, params=params)
 
     # Throw an exception if something went wrong
     response.raise_for_status() 

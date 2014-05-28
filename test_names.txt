@@ -1,6 +1,7 @@
-latin
-Panthera tigris
-Felis tigris
-tiger
-Felix tigris
-oopsie
+latin,count
+Eutamias minimus,10
+Panthera tigris,20
+Felis tigris,30
+tiger,10
+Felix tigris,10
+oopsie,5
