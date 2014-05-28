@@ -6,6 +6,9 @@ import gbif_api
 import csv
 import sys
 
+# Start a timer.
+time_start = datetime.datetime.now()
+
 # Read the command line.
 cmdline = argparse.ArgumentParser(description = 'Match species names')
 cmdline.add_argument('input', 
@@ -189,13 +192,15 @@ if args.internal and len(unmatched_names) > 0:
     internal_file.close()
 
 # Report.
+time_taken = (datetime.datetime.now() - time_start)
+
 filenames = []
 for file in args.input:
     filenames.append(file.name)
 
 sys.stderr.write("""
- - Processed on %s on file(s) %s
- - Rows with names processed: %d
+ - Processed on %s on file(s) %s in %s time:
+ - Rows with names processed: %d (%.5f/second)
  - Names matched against the internal database: %d (%.2f%%)
  - Names matched against Mammal Species of the World: %d (%.2f%%)
  - Names matched against TaxRefine: %d (%.2f%%)
@@ -203,7 +208,8 @@ sys.stderr.write("""
 """ % (
     timestamp,
     ', '.join(filenames),
-    row_count,
+    str(time_taken),
+    row_count, ((float(row_count)/time_taken.total_seconds())),
     count_internal, (float(count_internal)/row_count * 100),
     count_msw, (float(count_msw)/row_count * 100),
     count_taxrefine, (float(count_taxrefine)/row_count * 100),
