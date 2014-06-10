@@ -7,17 +7,42 @@
 #
 
 import configparser
-from matchers import Matcher
+from matchers import Matcher, MatchResult
 
 # A MatcherList
 class MatcherList:
-    def __init__(self, config, name, variable, condition, list):
+    def __init__(self, config, name, variable, condition, matchers_list):
         self.name = name
         self.variable = variable
         self.condition = condition
-        self.list_names = map(lambda x: x.strip(), list)
-        self.list_matchers = map(lambda x: Matcher.build(config, x), self.list_names)
+        self.list_names = map(lambda x: x.strip(), matchers_list)
+        self.list_matchers = list(map(lambda x: Matcher.build(config, x), self.list_names))
         self.default = Matcher.Null("No default handler defined")
+
+        # print("MatcherList created with matchers: " + str(list(self.list_matchers)))
+
+    def test(row):
+        if(name in row):
+            if row[name] == condition:
+                return true
+            else:
+                return false
+        else:
+            # Variable not found!
+            return false
+
+    def match(self, scname):
+        # print("MatcherList " + self.__str__() + ".match called: " + str(list(self.list_matchers)))
+        for matcher in self.list_matchers:
+            # print("Matching " + scname + " against " + str(matcher))
+            result = matcher.match(scname)
+            if result is not None:
+                break
+
+        if result is None:
+            result = self.default.match(scname)
+
+        return result
 
     def __str__(self):
         return self.name + ": " + ", ".join([str(matcher) for matcher in self.list_matchers])
@@ -30,8 +55,6 @@ class EmptyMatcherList (MatcherList):
             None, None, []
         )
 
-
-
 class MatchController:
     def __init__(self):
         self.list = []
@@ -43,6 +66,23 @@ class MatchController:
     def set_default(self, matcher):
         self.default = matcher
 
+    def match(self, rows, scname_row):
+        for row in rows:
+            scname = row[scname_row]
+            # print(" - scname: " + scname)
+            result = None
+
+            for matchlist in self.list:
+                # Check matchlist.test(row)
+                result = matchlist.match(scname)
+                if result is not None:
+                    break
+
+            if result is None:
+                result = self.default.match(scname)
+ 
+            row[scname_row + '_match'] = result
+    
     def __str__(self):
         str_list = [str(i) for i in self.list]
 
@@ -78,3 +118,13 @@ def parseSources(*filenames):
 if __name__ == '__main__':
     matcher = parseSources('sources.ini')
     print(matcher)
+    
+    test_data = [
+        {'scientificName': 'Panthera tigris'},
+        {'scientificName': 'Felis tigris'}
+    ]
+    matcher.match(test_data, 'scientificName')
+
+    print("Results:")
+    for row in test_data:
+        print(" - " + row['scientificName'] + ": " + str(row['scientificName_match']))

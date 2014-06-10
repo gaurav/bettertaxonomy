@@ -4,6 +4,43 @@
 # Some standard matchers for use with the MatchController.
 # 
 
+import gbif_api
+
+# The result of a match.
+class MatchResult:
+    def __init__(self, query, name_id, matched_name, accepted_name, source):
+        self.query = query
+        self.name_id = name_id
+        self.matched_name = matched_name
+        self.accepted_name = accepted_name
+        self.source = source
+
+    def __str__(self):
+        return "MatchResult(query='{}', matched=[id='{}', name='{}', accepted='{}'], source='{}')".format(
+            self.query,
+            self.name_id,
+            self.matched_name,
+            self.accepted_name,
+            self.source
+        )
+
+    def query(self):
+        return self.query
+
+    def matched_name(self):
+        return self.matched_name
+        
+    def name_id(self):
+        return self.name_id
+
+    def source(self):
+        return self.source
+        
+    def Empty():
+        return None 
+
+# The root class of all Matchers, plus some logic for generating the right
+# subclass.
 class Matcher:
     def name(self):
         raise NotImplementedError("Matcher subclass did not implement name!")
@@ -61,7 +98,23 @@ class GBIFMatcher(Matcher):
         return
 
     def match(self, scname):
-        return None
+        matches = gbif_api.get_matches(scname, self.gbif_id)
+
+        if len(matches) == 0:
+            return None
+
+        result = matches[0]
+
+        return MatchResult(
+            scname,
+            result['scientificName'],
+            gbif_api.get_url_for_id(result['key']),
+            result['accepted'] if 'accepted' in result else "",
+            "(GBIF:{}) {}".format(self.name,
+                result['publishedIn'] + " " +
+                result['datasetKey']
+            )
+        )
 
     def __str__(self):
         return self.name + " (GB)"
