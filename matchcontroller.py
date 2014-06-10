@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+# 
 # matcher.py
 # 
 # Parses a configuration file, and creates an object that can match
@@ -5,86 +7,7 @@
 #
 
 import configparser
-
-class Matcher:
-    def name(self):
-        raise NotImplementedError("Matcher subclass did not implement name!")
-    
-    def ready(self):
-        raise NotImplementedError("Matcher subclass did not implement ready!")
-
-    def match(self, scname):
-        raise NotImplementedError("Matcher subclass did not implement match!")
-
-    def build(config, name): 
-        if not "matcher:" + name in config:
-            return NullMatcher(name)
-        else:
-            section = config["matcher:" + name]
-            if "gbif_id" in section:
-                return GBIFMatcher(name, section['gbif_id'], section)
-            elif "file" in section:
-                return FileMatcher(name, section['file'], section)
-            else:
-                return NullMatcher(name)
-
-class NullMatcher(Matcher):
-    def __init__(self, name):
-        self.name = name
-
-    def name(self):
-        return self.name
-
-    def ready(self):
-        return
-
-    def match(self, scname):
-        return None
-
-    def __str__(self):
-        return self.name + "*"
-
-class GBIFMatcher(Matcher):
-    def __init__(self, name, gbif_id, options):
-        if 'name' in options:
-            self.name = options['name']
-        else:
-            self.name = name
-        self.gbif_id = gbif_id
-        self.options = options
-
-    def name(self):
-        return self.name
-
-    def ready(self):
-        return
-
-    def match(self, scname):
-        return None
-
-    def __str__(self):
-        return self.name + " (GB)"
-
-class FileMatcher(Matcher):
-    def __init__(self, name, filename, options):
-        if 'name' in options:
-            self.name = options['name']
-        else:
-            self.name = name
-        self.filename = filename
-        self.options = options
-
-    def name(self):
-        return self.name
-
-    def ready(self):
-        return
-
-    def match(self, scname):
-        return None
-
-    def __str__(self):
-        return self.name + " (FL)"
+from matchers import Matcher
 
 # A MatcherList
 class MatcherList:
@@ -94,7 +17,7 @@ class MatcherList:
         self.condition = condition
         self.list_names = map(lambda x: x.strip(), list)
         self.list_matchers = map(lambda x: Matcher.build(config, x), self.list_names)
-        self.default = NullMatcher("No default handler defined")
+        self.default = Matcher.Null("No default handler defined")
 
     def __str__(self):
         return self.name + ": " + ", ".join([str(matcher) for matcher in self.list_matchers])
@@ -107,7 +30,8 @@ class EmptyMatcherList (MatcherList):
             None, None, []
         )
 
-# A MatchController
+
+
 class MatchController:
     def __init__(self):
         self.list = []
