@@ -6,6 +6,7 @@ import datetime
 import csv
 import sys
 
+import matchers
 import gbif_api
 
 # Start a timer.
@@ -31,24 +32,9 @@ cmdline.add_argument('-internal',
 args = cmdline.parse_args()
 
 # Load the entire internal list, if it exists.
-internal_corrections = dict()
-ic_fieldnames = None
-if args.internal:
-    reader = csv.DictReader(open(args.internal, "r"), dialect=csv.excel)
-    ic_fieldnames = reader.fieldnames
-    row_index = 0
-    for row in reader:
-        row_index+=1
-        scname = row['scientificName']
-        if scname == None:
-            raise RuntimeError('No scientific name on row {0:d}'.format(row_index))
-        elif scname in internal_corrections:
-            raise RuntimeError('Duplicate scientificName detected: "{0:d}"'.format(scname))
-        else:
-            internal_corrections[scname] = row
-
-# Read list of names and match them.
-# TODO: add a cache for duplicate names.
+internal_list = matchers.FileMatcher("internal_list", args.internal, dict(
+    dialect = "excel"
+))
 
 # timestamp: a single timestamp for all operations.
 timestamp = datetime.datetime.now().strftime("%x")
@@ -114,11 +100,12 @@ for input in args.input:
         matched_source = None
 
         # Process the internal corrections.
-        if name in internal_corrections:
-            matched_scname = internal_corrections[name].get('correctName')
-            matched_acname = internal_corrections[name].get('correctAcceptedName')
-            matched_url = "internal"
-            matched_source = "internal (as of " + timestamp + ")"
+        match = internal_list.match(name)
+        if match is not None:
+            matched_scname = match.matched_name
+            matched_acname = match.accepted_name
+            matched_url = match.name_id
+            matched_source = match.source
 
             count_internal+=1
         else:
@@ -176,10 +163,10 @@ for input in args.input:
 
 if args.internal and len(unmatched_names) > 0:
     internal_file = open(args.internal, mode="a")
-    writer = csv.DictWriter(internal_file, ic_fieldnames, dialect=csv.excel)
+    writer = csv.DictWriter(internal_file, internal_list.fieldnames, dialect=csv.excel)
     
     dict_row = dict()
-    for colname in ic_fieldnames:
+    for colname in internal_list.fieldnames:
         dict_row[colname] = None
 
     for name in unmatched_names:
