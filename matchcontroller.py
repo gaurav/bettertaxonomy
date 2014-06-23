@@ -6,6 +6,7 @@
 # results.
 #
 
+import sys
 import configparser
 from matchers import Matcher, MatchResult
 
@@ -21,15 +22,18 @@ class MatcherList:
 
         # print("MatcherList created with matchers: " + str(list(self.list_matchers)))
 
-    def test(row):
-        if(name in row):
-            if row[name] == condition:
-                return true
+    def __len__(self):
+        return len(self.list_matchers) + 1
+
+    def test(self, row):
+        if(self.variable in row):
+            if row[self.variable].lower() == self.condition.lower():
+                return True
             else:
-                return false
+                return False
         else:
             # Variable not found!
-            return false
+            return False
 
     def match(self, scname):
         # print("MatcherList " + self.__str__() + ".match called: " + str(list(self.list_matchers)))
@@ -66,7 +70,21 @@ class MatchController:
     def set_default(self, matcher):
         self.default = matcher
 
-    def match(self, rows, scname_row):
+    def match(self, scname, row = dict()):
+        result = None
+
+        for matchlist in self.list:
+            if matchlist.test(row):
+                result = matchlist.match(scname)
+                if result is not None:
+                    break
+
+        if result is None:
+            resulf = self.default.match(scname)
+
+        return result
+
+    def matchRows(self, rows, scname_row):
         for row in rows:
             scname = row[scname_row]
             # print(" - scname: " + scname)
@@ -82,6 +100,9 @@ class MatchController:
                 result = self.default.match(scname)
  
             row[scname_row + '_match'] = result
+
+    def __len__(self):
+        return len(self.list)
     
     def __str__(self):
         str_list = [str(i) for i in self.list]

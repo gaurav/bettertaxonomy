@@ -4,6 +4,7 @@
 # Some standard matchers for use with the MatchController.
 # 
 
+import sys
 import gbif_api
 import csv
 
@@ -68,23 +69,30 @@ class GBIFMatcher(Matcher):
         return
 
     def match(self, scname):
+        sys.stderr.write(" - GBIFMatcher(" + self.name + ").match(" + scname + ", gbif_id = " + self.gbif_id + ")\n")
         matches = gbif_api.get_matches(scname, self.gbif_id)
 
         if len(matches) == 0:
+            sys.stderr.write("\t=> None\n")
             return None
 
         result = matches[0]
 
-        return MatchResult(
+        published_in = result['publishedIn'] if 'publishedIn' in result else ""
+
+        result = MatchResult(
             scname,
             result['scientificName'],
             gbif_api.get_url_for_id(result['key']),
             result['accepted'] if 'accepted' in result else "",
             "(GBIF:{}) {}".format(self.name,
-                result['publishedIn'] + " " +
+                published_in + " " +
                 result['datasetKey']
             )
         )
+
+        sys.stderr.write("\t=> " + str(result))
+        return result
 
     def __str__(self):
         return self.name + " (GB)"
@@ -126,6 +134,7 @@ class FileMatcher(Matcher):
         return
 
     def match(self, query_scname):
+        sys.stderr.write(" - FileMatcher(" + self.name + ").match(" + query_scname + ")\n")
         if self.names == None:
             self.names = dict()
 
@@ -151,10 +160,11 @@ class FileMatcher(Matcher):
 
             csvfile.close()
 
+        result = None
         if query_scname in self.names:
             row = self.names[query_scname]
 
-            return MatchResult(
+            result = MatchResult(
                 query_scname,
                 self.filename + "#" + str(row['_row_index']),
                 query_scname,
@@ -162,7 +172,10 @@ class FileMatcher(Matcher):
                 self.name
             )
         else:
-            return MatchResult.Empty()
+            result = None
+
+        sys.stderr.write("\t=> " + str(result))
+        return result
 
     def __str__(self):
         return self.name + " (" + self.filename + ")"

@@ -6,7 +6,8 @@ import datetime
 import csv
 import sys
 
-import matchers
+import matchcontroller
+import matchers # TODO remove
 import gbif_api
 
 # Start a timer.
@@ -14,6 +15,9 @@ time_start = datetime.datetime.now()
 
 # Read the command line.
 cmdline = argparse.ArgumentParser(description = 'Match species names')
+cmdline.add_argument('-config',
+    type=str,
+    help='Configuration file (see sources.example.txt for an example)')
 cmdline.add_argument('input', 
     nargs='*', 
     type=argparse.FileType(mode='r', encoding='utf-8'),
@@ -30,6 +34,17 @@ cmdline.add_argument('-internal',
     help='Internal list of name corrections (must be a CSV file)')
 
 args = cmdline.parse_args()
+
+# Load the config file.
+config_file = args.config
+if config_file is None:
+    config_file = "sources.example.ini"
+
+matchcontrol = matchcontroller.parseSources(config_file)
+
+sys.stderr.write("Configuration loaded from {:s}, {:d} match lists configured.\n".format(
+    config_file, len(matchcontrol)
+))
 
 # Load the entire internal list, if it exists.
 internal_list = matchers.FileMatcher("internal_list", args.internal, dict(
@@ -100,7 +115,7 @@ for input in args.input:
         matched_source = None
 
         # Process the internal corrections.
-        match = internal_list.match(name)
+        match = matchcontrol.match(name, row)
         if match is not None:
             matched_scname = match.matched_name
             matched_acname = match.accepted_name
@@ -109,42 +124,9 @@ for input in args.input:
 
             count_internal+=1
         else:
-            # Try Mammal Species of the World.
-            matches = gbif_api.get_matches(name, '672aca30-f1b5-43d3-8a2b-c1606125fa1b')
-            if len(matches) > 0:
-                # print matches[0];
-                matched_scname = matches[0]['scientificName']
-                if 'accepted' in matches[0].keys():
-                    matched_acname = matches[0]['accepted']
+            unmatched_names.append(name)
 
-                id = '0'
-                if 'nubKey' in matches[0].keys():
-                    id = matches[0]['nubKey']
-                elif 'key' in matches[0].keys():
-                    id = matches[0]['key']
-
-                matched_url = gbif_api.get_url_for_id(id)
-                matched_source = ("GBIF API queried for Mammal Species "
-                    "of the World ('672aca30-f1b5-43d3-8a2b-c1606125fa1b') on " +
-                    timestamp)
-
-                count_msw+=1
-            else: 
-                # Try TaxRefine.
-                matches = gbif_api.get_matches_from_taxrefine(name)
-                if len(matches) > 0:
-                    # print matches[0]
-                    matched_scname = matches[0]['summary']['scientificName']
-                    if 'accepted' in matches[0]['summary'].keys():
-                        matched_acname = matches[0]['summary']['accepted']
-                    matched_url = gbif_api.get_url_for_id(matches[0]['id'])
-                    matched_source = "TaxRefine/GBIF API queried on " + timestamp
-
-                    count_taxrefine+=1
-                else: 
-                    unmatched_names.append(name)
-
-                    count_unmatched+=1
+            count_unmatched+=1
 
         # scname and acname might be dicts, with (key: key_count) pairs.
         if type(matched_scname) == dict:
@@ -161,12 +143,16 @@ for input in args.input:
         output.writerow(row)
         row_count+=1
 
+# TODO: switch this to use the 'internal' file from the config, or
+# to use our 'internal' in the config, or something.
 if args.internal and len(unmatched_names) > 0:
+    fieldnames = internal_list.fieldnames()
+
     internal_file = open(args.internal, mode="a")
-    writer = csv.DictWriter(internal_file, internal_list.fieldnames, dialect=csv.excel)
+    writer = csv.DictWriter(internal_file, fieldnames, dialect=csv.excel)
     
     dict_row = dict()
-    for colname in internal_list.fieldnames:
+    for colname in fieldnames:
         dict_row[colname] = None
 
     for name in unmatched_names:

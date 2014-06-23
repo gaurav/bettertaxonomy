@@ -1,10 +1,10 @@
-latin,count
-Aëronautes,Aëronautes
-A.,-1
-Arvicolinae,1234567891234567891234567890
-Eutamias minimus,10
-Panthera tigris,20
-Felis tigris,30
-tiger,10
-Felix tigris,10
-oopsie,5
+latin,count,class
+Aëronautes,Aëronautes,Aves
+A.,-1,Aves
+Arvicolinae,1234567891234567891234567890,Mammlia
+Eutamias minimus,10,Mammalia
+Panthera tigris,20,Mammalia
+Felis tigris,30,Mammalia
+tiger,10,Mammalia
+Felix tigris,10,Mammalia
+oopsie,5,Mammalia
