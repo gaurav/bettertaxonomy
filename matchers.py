@@ -69,11 +69,11 @@ class GBIFMatcher(Matcher):
         return
 
     def match(self, scname):
-        sys.stderr.write(" - GBIFMatcher(" + self.name + ").match(" + scname + ", gbif_id = " + self.gbif_id + ")\n")
+        # sys.stderr.write(" - GBIFMatcher(" + self.name + ").match(" + scname + ", gbif_id = " + self.gbif_id + ")\n")
         matches = gbif_api.get_matches(scname, self.gbif_id)
 
         if len(matches) == 0:
-            sys.stderr.write("\t=> None\n")
+            # sys.stderr.write("\t=> None\n")
             return None
 
         result = matches[0]
@@ -81,9 +81,10 @@ class GBIFMatcher(Matcher):
         published_in = result['publishedIn'] if 'publishedIn' in result else ""
 
         result = MatchResult(
+            self,
             scname,
-            result['scientificName'],
             gbif_api.get_url_for_id(result['key']),
+            result['scientificName'],
             result['accepted'] if 'accepted' in result else "",
             "(GBIF:{}) {}".format(self.name,
                 published_in + " " +
@@ -91,7 +92,7 @@ class GBIFMatcher(Matcher):
             )
         )
 
-        sys.stderr.write("\t=> " + str(result))
+        # sys.stderr.write("\t=> " + str(result))
         return result
 
     def __str__(self):
@@ -121,7 +122,7 @@ class FileMatcher(Matcher):
         return self.dialect
 
     def fieldnames(self):
-        if self.names == None:
+        if self.names is None:
             self.match("Felis tigris")
             return self.fieldnames
         else:
@@ -134,7 +135,7 @@ class FileMatcher(Matcher):
         return
 
     def match(self, query_scname):
-        sys.stderr.write(" - FileMatcher(" + self.name + ").match(" + query_scname + ")\n")
+        # sys.stderr.write(" - FileMatcher(" + self.name + ").match(" + query_scname + ")\n")
         if self.names == None:
             self.names = dict()
 
@@ -165,6 +166,7 @@ class FileMatcher(Matcher):
             row = self.names[query_scname]
 
             result = MatchResult(
+                self,
                 query_scname,
                 self.filename + "#" + str(row['_row_index']),
                 query_scname,
@@ -174,7 +176,7 @@ class FileMatcher(Matcher):
         else:
             result = None
 
-        sys.stderr.write("\t=> " + str(result))
+        # sys.stderr.write("\t=> " + str(result))
         return result
 
     def __str__(self):
@@ -182,7 +184,8 @@ class FileMatcher(Matcher):
 
 # The result of a match. Wraps a bunch of properties of a match.
 class MatchResult:
-    def __init__(self, query, name_id, matched_name, accepted_name, source):
+    def __init__(self, matcher, query, name_id, matched_name, accepted_name, source):
+        self.matcher = matcher
         self.query = query
         self.name_id = name_id
         self.matched_name = matched_name
@@ -190,7 +193,8 @@ class MatchResult:
         self.source = source
 
     def __str__(self):
-        return "MatchResult(query='{}', matched=[id='{}', name='{}', accepted='{}'], source='{}')".format(
+        return "MatchResult(matcher='{}', query='{}', matched=[id='{}', name='{}', accepted='{}'], source='{}')".format(
+            self.matcher,
             self.query,
             self.name_id,
             self.matched_name,
