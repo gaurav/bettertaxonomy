@@ -1,0 +1,10 @@
+latin,matched_scname,matched_acname,matched_url,matched_source,count,class
+Aëronautes,Aëronautes,,lookupclass-test.txt#331,Internal database,Aëronautes,Aves
+A.,A.,,lookupclass-test.txt#76,Internal database,-1,Aves
+Arvicolinae,,,,,1234567891234567891234567890,Mammlia
+Eutamias minimus,http://gbif.org/species/119924203,"Tamias minimus Bachman, 1839","Eutamias minimus (Bachman, 1839)",(GBIF:Catalogue of Life)  7ddf754f-d193-4cc9-b351-99906754a03b,10,Mammalia
+Panthera tigris,http://gbif.org/species/103371328,,"Panthera tigris Linnaeus, 1758","(GBIF:Mammal Species of the World, 3rd edition) Syst. Nat. , 10th ed. vol. 1 p. 41 672aca30-f1b5-43d3-8a2b-c1606125fa1b",20,Mammalia
+Felis tigris,,,,,30,Mammalia
+tiger,,,,,10,Mammalia
+Felix tigris,,,,,10,Mammalia
+oopsie,,,,,5,Mammalia
