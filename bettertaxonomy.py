@@ -1,37 +1,50 @@
 #!/usr/bin/env python3
+#
+# bettertaxonomy.py - matching multiple taxonomic sources
+# 
+# Better Taxonomy is a script for matching multiple taxonomic sources: 
+# it can match names from a CSV file against other CSV files, against
+# GBIF checklists, and against TaxRefine. It also manages an internal
+# list, that is automatically updated with names that could not be 
+# matched. Use sources.example.ini to create a configuration file.
+# 
+# Find out more at https://github.com/gaurav/bettertaxonomy
+# 
 
 import argparse
-import codecs
 import datetime
 import csv
 import sys
 
 import matchcontroller
 import matchers
-import gbif_api
+
+#
+# INITIALIZATION
+#
 
 # Start a timer.
 time_start = datetime.datetime.now()
 
-# timestamp: a single timestamp for all operations 
+# Store a single timestamp for all operations.
 timestamp = datetime.datetime.now().strftime("%x")
 
-# Read the command line.
-cmdline = argparse.ArgumentParser(description = 'Match species names')
-
-cmdline.add_argument('-config',
-    type=str,
-    help='Configuration file (see sources.example.ini for an example)')
+# Read and parse the command line.
+cmdline = argparse.ArgumentParser(description = 'Match taxonomic names')
 
 cmdline.add_argument('input', 
     type=argparse.FileType(mode='r', encoding='utf-8'),
-    help='A CSV or plain text file containing species names',
+    help='A CSV or plain text file containing taxonomic names',
     default = [sys.stdin])
 
 cmdline.add_argument('-fieldname',
     type=str,
     help='The field containing scientific names to match',
     default = 'scientificName')
+
+cmdline.add_argument('-config',
+    type=str,
+    help='Configuration file (see sources.example.ini for an example)')
 
 cmdline.add_argument('-internal',
     nargs='?',
@@ -59,11 +72,17 @@ else:
         dialect = "excel"
     ))
 
+#
+# READ INPUT FILE
+# 
+
 # All three counts here are by row, not unique names.
 row_count = 0
 match_count = 0
 unmatched_count = 0
 match_count_by_matcher = dict()
+
+# Store names that could not be matched.
 unmatched = []
 
 # Figure out the file type of the input file.
@@ -88,7 +107,7 @@ if header.count(args.fieldname) == 0:
     sys.stderr.write("Error: could not find field '{}' in file\n".format(args.fieldname))
     exit(1)
 
-# Create new columns for output:
+# Create new columns in the output file to store:
 # - matched_scname: The name that was matched in the database.
 # - matched_acname: The accepted name as reported by the database.
 # - matched_url: A URL to this entry in the database.
@@ -99,24 +118,28 @@ output_header.insert(output_header.index(args.fieldname) + 2, 'matched_acname')
 output_header.insert(output_header.index(args.fieldname) + 3, 'matched_url')
 output_header.insert(output_header.index(args.fieldname) + 4, 'matched_source')
 
-# Create a csv.writer for rewriting this file to output.
-# sys.stdout = codecs.getwriter(sys.stdout.encoding)(sys.stdout)
+# Create a csv.writer for writing this file to output.
 output = csv.DictWriter(sys.stdout, output_header, dialect)
 output.writeheader()
 
-# Match rows. For now, try three databases: internal, GBIF:MSW, and TaxRefine.
+#
+# MATCH ROWS
+#
+
 for row in reader:
-    # print "To start with: " + str(row)
+    # Find the scientific name.
     name = row[args.fieldname]
 
+    # Initialize matched names.
     matched_scname = None
     matched_acname = None
     matched_url = None
     matched_source = None
 
-    # Process the internal corrections.
+    # Step 1. Use the MatchController generated from the configuration file.
     match = matchcontrol.match(name, row)
     if match is not None:
+        # Match!
         match_count += 1
 
         matched_scname = match.matched_name
@@ -125,15 +148,18 @@ for row in reader:
         matched_source = match.source
         matched_matcher = match.matcher
 
+        # Store count by matcher.
         if match.matcher in match_count_by_matcher:
             match_count_by_matcher[match.matcher] += 1
         else:
             match_count_by_matcher[match.matcher] = 1
 
     else:
+        # Step 2. Match against the internal file.
         match = internal_list.match(name)
 
         if match is not None:
+            # Match!
             match_count += 1
 
             matched_scname = match.matched_name
@@ -142,12 +168,14 @@ for row in reader:
             matched_source = match.source
             matched_matcher = match.matcher
 
+            # Store count by matcher.
             if "internal" in match_count_by_matcher:
                 match_count_by_matcher["internal"] += 1
             else:
                 match_count_by_matcher["internal"] = 1            
 
         else:
+            # Step 3. No match found. Store it for later.
             unmatched.append(name)
             unmatched_count += 1
 
@@ -163,28 +191,39 @@ for row in reader:
     row['matched_url'] = matched_url
     row['matched_source'] = matched_source
 
-    # print "Row to write: " + str(row)
+    # Write out the row.
     output.writerow(row)
     row_count+=1
 
-# All unmatched names should be added to the internal_list.
+#
+# ADD UNMATCHED NAMES TO INTERNAL LIST
+# 
+
 if args.internal and len(unmatched) > 0:
     fieldnames = internal_list.fieldnames
 
+    # Open the internal file in append mode, and a DictWriter to
+    # write to it. Use the headers from loading this file earlier.
     internal_file = open(args.internal, mode="a")
     writer = csv.DictWriter(internal_file, fieldnames, dialect=csv.excel)
     
-    dict_row = dict()
+    # Create new row with all the other columns.
+    row = dict()
     for colname in fieldnames:
-        dict_row[colname] = None
+        row[colname] = None
 
+    # For each name, replace the name in the row and
+    # write it out.
     for name in unmatched:
-        dict_row['scientificName'] = name
-        writer.writerow(dict_row)
+        row[args.fieldname] = name
+        writer.writerow(row)
 
     internal_file.close()
 
-# Report.
+#
+# REPORT ON THE RESULTS
+#
+
 time_taken = (datetime.datetime.now() - time_start)
 
 # Summarize sources.
@@ -198,6 +237,7 @@ for matcher in match_count_by_matcher:
     ))
 match_summary.sort()
 
+# Write report.
 sys.stderr.write("""
  - Processed on %s on file %s in %s time.
  - Rows with names processed: %d (%.5f rows/second, %.5f seconds/row)
