@@ -1,13 +1,14 @@
 # A Python script for accessing the GBIF API 0.9
 # http://www.gbif.org/developer/species
 
-# HTTP lib
-import requests
 
-import sys
+import requests     # HTTP library
+import sys          # So we can print to stderr
 
+# Path to the API.
 gbif_api_root = "http://api.gbif.org/v0.9";
 
+# Look up this name on a particular dataset.
 def get_matches(name, dataset = None):
     url = gbif_api_root + "/species"
 
@@ -36,9 +37,8 @@ def get_matches(name, dataset = None):
 
     return results
 
-# TaxRefine
-
-def get_matches_from_taxrefine(name, datasets = []):
+# Look up this name using TaxRefine.
+def get_matches_from_taxrefine(name):
     url = "http://refine.taxonomics.org/gbifchecklists/reconcile"
 
     try:
@@ -60,6 +60,7 @@ def get_matches_from_taxrefine(name, datasets = []):
 
     return result
 
+# Convert a GBIF ID to a URL.
 def get_url_for_id(id): 
-    # TODO: check that id is purely number
+    # TODO: check that id is a number
     return "http://gbif.org/species/" + str(id)
