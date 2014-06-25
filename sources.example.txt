@@ -1,3 +1,0 @@
-# This is a sources file. Each line on this file must contain
-# three pipe-separated components:
-
