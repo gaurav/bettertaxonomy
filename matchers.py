@@ -112,11 +112,16 @@ class FileMatcher(Matcher):
         if 'column_name' in options:
             self.namecol = options['column_name']
 
+        # TODO: attempt to guess the scientific name column.
+
         self.dialect = csv.excel
         if 'dialect' in options:
             self.dialect = csv.get_dialect(options['dialect'])
 
         self.names = None
+
+    def column_name(self):
+        return self.namecol
 
     def dialect(self):
         return self.dialect

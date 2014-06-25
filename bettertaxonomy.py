@@ -71,6 +71,7 @@ else:
     internal_list = matchers.FileMatcher("internal", args.internal, dict(
         dialect = "excel"
     ))
+    internal_fieldname = internal_list.column_name()
 
 #
 # READ INPUT FILE
@@ -215,7 +216,7 @@ if args.internal and len(unmatched) > 0:
     # For each name, replace the name in the row and
     # write it out.
     for name in unmatched:
-        row[args.fieldname] = name
+        row[internal_fieldname] = name
         writer.writerow(row)
 
     internal_file.close()
