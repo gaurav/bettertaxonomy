@@ -29,8 +29,8 @@ oopsie,,,,,5,Mammalia
  - Rows with names processed: 9 (1.78465 rows/second, 0.56033 seconds/row)
  - 4 names (44.44%) were matched against the following sources:
         Catalogue of Life (GB): 1 (25.00%)
-        Internal database (./data/LookupClassification.txt): 2 (50.00%)
-	      Mammal Species of the World, 3rd edition (GB): 1 (25.00%)
+        File-based database (./data/LookupClassification.txt): 2 (50.00%)
+	Mammal Species of the World, 3rd edition (GB): 1 (25.00%)
  - Names that could not be matched against any checklist: 5 (55.56%)
 ```
 
@@ -54,7 +54,7 @@ oopsie,,,,,5,Mammalia
  - Rows with names processed: 9 (0.99406 rows/second, 1.00597 seconds/row)
  - 5 names (55.56%) were matched against the following sources:
 	Catalogue of Life (GB): 1 (20.00%)
-	Internal database (./data/LookupClassification.txt): 2 (40.00%)
+	File-based database (./data/LookupClassification.txt): 2 (40.00%)
 	Mammal Species of the World, 3rd edition (GB): 1 (20.00%)
 	internal: 1 (20.00%)
  - Names that could not be matched against any checklist: 4 (44.44%)
@@ -80,7 +80,7 @@ oopsie,oopsie,,lookupclass-test.txt#16324,internal,5,Mammalia
  - Rows with names processed: 9 (1.82590 rows/second, 0.54767 seconds/row)
  - 9 names (100.00%) were matched against the following sources:
 	Catalogue of Life (GB): 1 (11.11%)
-	Internal database (./data/LookupClassification.txt): 2 (22.22%)
+	File-based database (./data/LookupClassification.txt): 2 (22.22%)
 	Mammal Species of the World, 3rd edition (GB): 1 (11.11%)
 	internal: 5 (55.56%)
  - Names that could not be matched against any checklist: 0 (0.00%)
