@@ -86,3 +86,76 @@ oopsie,oopsie,,lookupclass-test.txt#16324,internal,5,Mammalia
  - Names that could not be matched against any checklist: 0 (0.00%)
 
 ```
+
+## Configuration file
+
+To use BetterTaxonomy, you need to set up a configuration file. An example file is 
+provided [in the distribution](https://github.com/gaurav/bettertaxonomy/blob/develop/sources.example.ini). 
+This tells the script which resources to query for species names. 
+
+Each configuration file contains a `matchers` section, which contains a set of 
+Matcher Lists. Each Matcher List is activated by a particular condition in the 
+format `column-name ~ value`; if the column name for a particular row matches 
+the value, that Matcher List is used to process that row. If no condition can 
+be matched, the Matcher List marked `default` is used. The example matchers section
+looks like the following:
+
+```ini
+[matchers]
+class ~ mammalia = msw3, itis, col, paleodb, ncbi, file-example, taxrefine
+class ~ aves = avibase, itis, col, paleodb, ncbi, file-example, taxrefine
+class ~ reptilia = itis, col, reptile_database, paleodb, ncbi, file-example, taxrefine
+class ~ amphibia = amphibiaweb, itis, col, paleodb, ncbi, file-example, taxrefine
+phylum ~ chordata = fishbase, itis, col, paleodb, ncbi, file-example, taxrefine
+default = file-example, taxrefine
+```
+
+Each Matcher List consists of a series of matchers. Each matcher must be described in
+its own `matcher` section; for example, `file-example` is described in the section
+`matcher:file-example`.
+
+```ini
+[matcher:file-example]
+name = File-based database
+file = ./data/LookupClassification.txt
+scientificName_column = scientificName
+```
+
+The type of a matcher is determined by the settings it contains: `gbif_id` indicates a
+GBIF matcher, while `file` indicates a File matcher.
+
+### File matcher
+
+A file matcher matches a name in any file format that 
+[Python's CSV module](https://docs.python.org/3/library/csv.html) can accept. It
+accepts the following properties:
+
+* `name`: The name of this file matcher.
+* `file`: The location of a file to load.
+* `dialect`: [The CSV dialect](https://docs.python.org/3/library/csv.html#csv.Dialect) the file uses. Use `excel` for most CSV files, and `excel_tab` for most tab-delimited files.
+* `column_name`: The name of the column in the CSV file that contains the scientific name.
+
+An example of a file matcher is as follows:
+
+```ini
+[matcher:file-example]
+name = File-based database
+file = ./data/LookupClassification.txt
+scientificName_column = scientificName
+```
+
+### GBIF matcher
+
+A GBIF matcher matches a name against a particular checklist on GBIF. It accepts the
+following properties:
+
+* `name`: The name of this GBIF matcher.
+* `gbif_id`: The UUID that identifies this checklist on the GBIF website. For example, _Mammal Species of the World, 3rd edition_ is [672aca30-f1b5-43d3-8a2b-c1606125fa1b](http://www.gbif.org/dataset/672aca30-f1b5-43d3-8a2b-c1606125fa1b).
+
+An example of a GBIF matcher is as follows:
+
+```ini
+[matcher:msw3]
+name = Mammal Species of the World, 3rd edition
+gbif_id = 672aca30-f1b5-43d3-8a2b-c1606125fa1b
+```
