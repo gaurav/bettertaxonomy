@@ -86,3 +86,27 @@ oopsie,oopsie,,lookupclass-test.txt#16324,internal,5,Mammalia
  - Names that could not be matched against any checklist: 0 (0.00%)
 
 ```
+
+## Configuration file
+
+To use BetterTaxonomy, you need to set up a configuration file. An example file is 
+provided [in the distribution](https://github.com/gaurav/bettertaxonomy/blob/develop/sources.example.ini). 
+This tells the script which resources to query for species names. 
+
+Each configuration file contains a `matchers` section, which contains a set of 
+Matcher Lists. Each Matcher List is activated by a particular condition in the 
+format `column-name ~ value`; if the column name for a particular row matches 
+the value, that Matcher List is used to process that row. If no condition can 
+be matched, the Matcher List marked `default` is used. The example matchers section
+looks like the following:
+
+```ini
+[matchers]
+class ~ mammalia = msw3, itis, col, paleodb, ncbi, file-example, taxrefine
+class ~ aves = avibase, itis, col, paleodb, ncbi, file-example, taxrefine
+class ~ reptilia = itis, col, reptile_database, paleodb, ncbi, file-example, taxrefine
+class ~ amphibia = amphibiaweb, itis, col, paleodb, ncbi, file-example, taxrefine
+phylum ~ chordata = fishbase, itis, col, paleodb, ncbi, file-example, taxrefine
+default = file-example, taxrefine
+```
+
