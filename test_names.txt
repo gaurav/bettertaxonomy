@@ -8,3 +8,4 @@ Felis tigris,30,Mammalia
 tiger,10,Mammalia
 Felix tigris,10,Mammalia
 oopsie,5,Mammalia
+Allophryne,1,Amphibia
