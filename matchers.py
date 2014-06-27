@@ -22,7 +22,9 @@ class Matcher:
 
     def build(config, name): 
         if not "matcher:" + name in config:
-            return NullMatcher(name)
+            raise RuntimeError("No matcher found in the configuration file for '{:s}'!".format(
+                name
+            ))
         else:
             section = config["matcher:" + name]
             if "gbif_id" in section:
