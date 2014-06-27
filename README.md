@@ -110,3 +110,52 @@ phylum ~ chordata = fishbase, itis, col, paleodb, ncbi, file-example, taxrefine
 default = file-example, taxrefine
 ```
 
+Each Matcher List consists of a series of matchers. Each matcher must be described in
+its own `matcher` section; for example, `file-example` is described in the section
+`matcher:file-example`.
+
+```ini
+[matcher:file-example]
+name = File-based database
+file = ./data/LookupClassification.txt
+scientificName_column = scientificName
+```
+
+The type of a matcher is determined by the settings it contains: `gbif_id` indicates a
+GBIF matcher, while `file` indicates a File matcher.
+
+### File matcher
+
+A file matcher matches a name in any file format that 
+[Python's CSV module](https://docs.python.org/3/library/csv.html) can accept. It
+accepts the following properties:
+
+* `name`: The name of this file matcher.
+* `file`: The location of a file to load.
+* `dialect`: [The CSV dialect](https://docs.python.org/3/library/csv.html#csv.Dialect) the file uses. Use `excel` for most CSV files, and `excel_tab` for most tab-delimited files.
+* `column_name`: The name of the column in the CSV file that contains the scientific name.
+
+An example of a file matcher is as follows:
+
+```ini
+[matcher:file-example]
+name = File-based database
+file = ./data/LookupClassification.txt
+scientificName_column = scientificName
+```
+
+### GBIF matcher
+
+A GBIF matcher matches a name against a particular checklist on GBIF. It accepts the
+following properties:
+
+* `name`: The name of this GBIF matcher.
+* `gbif_id`: The UUID that identifies this checklist on the GBIF website. For example, _Mammal Species of the World, 3rd edition_ is [672aca30-f1b5-43d3-8a2b-c1606125fa1b](http://www.gbif.org/dataset/672aca30-f1b5-43d3-8a2b-c1606125fa1b).
+
+An example of a GBIF matcher is as follows:
+
+```ini
+[matcher:msw3]
+name = Mammal Species of the World, 3rd edition
+gbif_id = 672aca30-f1b5-43d3-8a2b-c1606125fa1b
+```
