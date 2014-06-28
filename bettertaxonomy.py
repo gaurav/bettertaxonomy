@@ -60,8 +60,8 @@ if config_file is None:
 
 matchcontrol = matchcontroller.parseSources(config_file)
 
-sys.stderr.write("Configuration loaded from {:s}, {:d} match lists configured.\n".format(
-    config_file, len(matchcontrol)
+sys.stderr.write("Configuration loaded from {:s}, {:d} match lists configured:\n\t{:s}".format(
+    config_file, len(matchcontrol), str(matchcontrol)
 ))
 
 # Load the internal list.
@@ -129,7 +129,7 @@ output.writeheader()
 
 for row in reader:
     # Find the scientific name.
-    name = row[args.fieldname]
+    name = row[args.fieldname].strip()
 
     # Initialize matched names.
     matched_scname = None

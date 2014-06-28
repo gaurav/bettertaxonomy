@@ -70,6 +70,8 @@ class MatcherList:
     #   - if a match was successful: a MatchResult
     #   - if a match was not successful: None
     def match(self, scname):
+        result = None
+
         for matcher in self.list_matchers:
             result = matcher.match(scname)
             if result is not None:
@@ -127,7 +129,7 @@ class MatchController:
                     break
 
         if result is None:
-            resulf = self.default.match(scname)
+            result = self.default.match(scname)
 
         return result
 
