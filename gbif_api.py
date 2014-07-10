@@ -41,6 +41,10 @@ def get_matches(name, dataset = None):
 def get_matches_from_taxrefine(name):
     url = "http://refine.taxonomics.org/gbifchecklists/reconcile"
 
+    return get_matches_from_recon_url(url, name)
+
+def get_matches_from_recon_url(url, name):
+
     try:
         response = requests.get(url, params = {
             'query': name

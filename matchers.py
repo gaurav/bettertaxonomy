@@ -33,7 +33,9 @@ class Matcher:
             # Eventually, we might have a "type=gbif" as part of the config, but
             # for now we can just use the field names.
             section = config["matcher:" + name]
-            if "gbif_id" in section:
+            if "recon_url" in section:
+                return ReconciliationMatcher(name, section['recon_url'], section)
+            elif "gbif_id" in section:
                 return GBIFMatcher(name, section['gbif_id'], section)
             elif "file" in section:
                 return FileMatcher(name, section['file'], section)
@@ -137,6 +139,80 @@ class GBIFMatcher(Matcher):
     # Returns a string object; we use "(GB)" after the name given to us.
     def __str__(self):
         return self.name + " (GB)"
+
+# ReconciliationMatcher: match against a reconciliation service
+class ReconciliationMatcher(Matcher):
+    # Creates an object given a recon_url and other options.
+    # No other options are currently recognized.
+    def __init__(self, name, recon_url, options):
+        if 'name' in options:
+            self.name = options['name']
+        else:
+            self.name = name
+        self.recon_url = recon_url
+        self.options = options
+
+    # Returns the name of this matcher, as used in the configuration file.
+    def name(self):
+        return self.name
+
+    # Matches this name against the reconciliation service.
+    def match(self, scname):
+        # Query the reconciliation service.
+        matches = gbif_api.get_matches_from_recon_url(self.recon_url, scname)
+
+        # Pick the first match.
+        if len(matches) == 0:
+            return None
+        result = matches[0]
+
+        # Distinguish accepted and use name.
+        name = result['name']
+
+        # This only works on TaxRefine, but it's unlikely to show up elsewhere.
+        accepted = ""
+        if name.find("[=>") != -1: 
+            (name, sep, accepted) = name.partition("[=>")
+
+        source = ""
+        if "summary" in result:
+            summary = result['summary']
+            if "accordingTo" in summary:
+                accordingTo = summary['accordingTo']
+                if type(accordingTo) == dict:
+                    source += "According to: " + ", ".join(accordingTo.keys()) + " "
+                else:
+                    source += "According to: " + str(accordingTo) + " "
+
+            if "publishedIn" in summary:
+                publishedIn = summary['publishedIn']
+                if type(publishedIn) == dict:
+                    source += "Published in: " + ", ".join(publishedIn.keys()) + " "
+                else:
+                    source += "Published in: " + str(publishedIn) + " "
+
+            if "datasetKey" in summary:
+                datasetKey = summary['datasetKey']
+                if type(datasetKey) == dict:
+                    source += "GBIF datasets: " + ", ".join(datasetKey.keys()) + " "
+                else:
+                    source += "GBIF datasets: " + str(datasetKey) + " "
+
+        # Construct a MatchResult to return.
+        result = MatchResult(
+            self,
+            scname,
+            gbif_api.get_url_for_id(result['id']),
+            name,
+            accepted,
+            "(Recon:{}) {}".format(self.name, source.strip())
+        )
+
+        return result
+
+    # Returns a string object; we use "(GB)" after the name given to us.
+    def __str__(self):
+        return self.name + " (RM)"
 
 # Look up this name in a file.
 import csv
