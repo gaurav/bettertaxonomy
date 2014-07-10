@@ -150,10 +150,11 @@ for row in reader:
         matched_matcher = match.matcher
 
         # Store count by matcher.
-        if match.matcher in match_count_by_matcher:
-            match_count_by_matcher[match.matcher] += 1
+        matcher_name = str(match.matcher)
+        if matcher_name in match_count_by_matcher:
+            match_count_by_matcher[matcher_name] += 1
         else:
-            match_count_by_matcher[match.matcher] = 1
+            match_count_by_matcher[matcher_name] = 1
 
     else:
         # Step 2. Match against the internal file.
