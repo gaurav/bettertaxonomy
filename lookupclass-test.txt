@@ -1,6 +1,1 @@
 "scientificName","correctName","Family","Order","Class","Phylum","Kingdom","source","standard","checked","error"
-Arvicolinae,,,,,,,,,,
-Felis tigris,,,,,,,,,,
-tiger,,,,,,,,,,
-Felix tigris,,,,,,,,,,
-oopsie,,,,,,,,,,

@@ -15,6 +15,7 @@ import argparse
 import datetime
 import csv
 import sys
+import codecs
 
 import matchcontroller
 import matchers
@@ -33,9 +34,8 @@ timestamp = datetime.datetime.now().strftime("%x")
 cmdline = argparse.ArgumentParser(description = 'Match taxonomic names')
 
 cmdline.add_argument('input', 
-    type=argparse.FileType(mode='r', encoding='utf-8'),
-    help='A CSV or plain text file containing taxonomic names',
-    default = [sys.stdin])
+    nargs='?',
+    help = 'A CSV or plain text file containing taxonomic names. Defaults to stdin.')
 
 cmdline.add_argument('-fieldname',
     type=str,
@@ -52,6 +52,15 @@ cmdline.add_argument('-internal',
     help='Internal list of name corrections (must be a CSV file)')
 
 args = cmdline.parse_args()
+
+# Set up the input stream.
+input = None
+if args.input is None:
+    #sys.stdin = codecs.getreader("utf-8")(sys.stdin)
+    input = sys.stdin
+else:
+    #input = codecs.open(args.input, "r", "utf-8")
+    input = open(args.input, "r")
 
 # Load the config file.
 config_file = args.config
@@ -87,8 +96,6 @@ match_count_by_matcher = dict()
 unmatched = []
 
 # Figure out the file type of the input file.
-input = args.input
-
 try:
     # Try to sniff the file format.
     dialect = csv.Sniffer().sniff(input.read(1024), delimiters="\t,;|")
@@ -188,10 +195,10 @@ for row in reader:
         matched_acname = sorted(matched_acname, key=matched_acname.get)[0]
 
     # Add details to the row we're writing out.
-    row['matched_scname'] = matched_scname
-    row['matched_acname'] = matched_acname
-    row['matched_url'] = matched_url
-    row['matched_source'] = matched_source
+    row['matched_scname'] = matched_scname.encode("utf-8") if matched_scname is not None else ""
+    row['matched_acname'] = matched_acname.encode("utf-8") if matched_acname is not None else ""
+    row['matched_url'] = matched_url.encode("utf-8") if matched_url is not None else ""
+    row['matched_source'] = matched_source.encode("utf-8") if matched_source is not None else ""
 
     # Write out the row.
     output.writerow(row)
@@ -217,7 +224,7 @@ if args.internal and len(unmatched) > 0:
     # For each name, replace the name in the row and
     # write it out.
     for name in unmatched:
-        row[internal_fieldname] = name
+        row[internal_fieldname] = name.encode("utf-8") if name is not None else ""
         writer.writerow(row)
 
     internal_file.close()
@@ -248,7 +255,7 @@ sys.stderr.write("""
  - Names that could not be matched against any checklist: %d (%.2f%%)
 """ % (
     timestamp,
-    args.input.name,
+    input.name,
     str(time_taken),
     row_count, 
         ((float(row_count)/time_taken.total_seconds())),

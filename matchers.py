@@ -8,7 +8,7 @@ import sys
 
 # The root class of all Matchers. Use Matcher.build(...) to create a new Matcher
 # subclass for a given configuration.
-class Matcher:
+class Matcher(object):
     # Every Matcher has a name.
     def name(self):
         raise NotImplementedError("Matcher subclass did not implement name!")
@@ -19,26 +19,26 @@ class Matcher:
         raise NotImplementedError("Matcher subclass did not implement match!")
 
     # Creates a configuration for a matcher with a particular name.
+    #   - self: the Matcher() object (which we don't need).
     #   - config: a dict() contains configuration options for this Matcher.
     #   - name: the name of this matcher.
     # 
     # Returns: a Matcher
-    def build(config, name): 
-        if not "matcher:" + name in config:
-            raise RuntimeError("No matcher found in the configuration file for '{:s}'!".format(
-                name
-            ))
+    def build(self, config, name): 
+        if not config.has_section("matcher:" + name):
+            raise RuntimeError("No matcher found in the configuration file for '{:s}'!".format(name))
         else:
             # Picks a subclass to create based on the configuration provided.
             # Eventually, we might have a "type=gbif" as part of the config, but
             # for now we can just use the field names.
-            section = config["matcher:" + name]
-            if "recon_url" in section:
-                return ReconciliationMatcher(name, section['recon_url'], section)
+            matcher_section = "matcher:" + name
+            section = dict(config.items(matcher_section))
+            if config.has_option(matcher_section, "recon_url"):
+                return ReconciliationMatcher(name, config.get(matcher_section, 'recon_url'), section)
             elif "gbif_id" in section:
-                return GBIFMatcher(name, section['gbif_id'], section)
+                return GBIFMatcher(name, config.get(matcher_section, 'gbif_id'), section)
             elif "file" in section:
-                return FileMatcher(name, section['file'], section)
+                return FileMatcher(name, config.get(matcher_section, 'file'), section)
             else:
                 return NullMatcher(name)
 

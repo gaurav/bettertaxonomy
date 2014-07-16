@@ -19,14 +19,15 @@
 #       -> List of Matchers: queried in turn on the provided row.
 #
 
-import configparser
+import codecs
+import ConfigParser 
 from matchers import Matcher, MatchResult
 
 # A MatcherList is a list of Matchers that are tested in sequence. Once a Matcher
 # matches a name, the search is terminated. A MatcherList can have a "condition" 
 # set as a combination of a column name and a value in that column; the test()
 # method can be used to check whether a row conforms to that condition.
-class MatcherList:
+class MatcherList (object):
     # Creates a MatcherList. Requires:
     #   - config: The ConfigParser that is parsing the configuration file.
     #   - name: The human-readable name of this matcher list.
@@ -39,7 +40,7 @@ class MatcherList:
         self.column_name = column_name
         self.column_value = column_value
         self.list_names = map(lambda x: x.strip(), matchers_list)
-        self.list_matchers = list(map(lambda x: Matcher.build(config, x), self.list_names))
+        self.list_matchers = list(map(lambda x: Matcher().build(config, x), self.list_names))
 
     # Returns the number of matchers.
     def __len__(self):
@@ -170,22 +171,24 @@ class MatchController:
 
 # Parses a .ini file and creates a sequence of matchers that follow
 # the sequence in the file.
-def parseSources(*filenames):
-    config = configparser.ConfigParser()
-    config.read(filenames, encoding='utf8')
+def parseSources(filename):
+    config = ConfigParser.ConfigParser()
+    config_file = codecs.open(filename, "r", "utf-8")
+    config.readfp(config_file)
+    config.optionxform = str # Makes all keys case-sensitive.
 
     # Read the [matchers] section.
-    matchers = config['matchers']
-    keys = matchers.keys()
-
+    matcher_keys = config.options('matchers')
     matchc = MatchController()
 
-    for key in keys:
+    for key in matcher_keys:
         if key == 'default':
-            matchc.set_default(MatcherList(config, key, None, None, matchers[key].split(',')))
+            matchc.set_default(MatcherList(config, key, None, None, config.get('matchers', key).split(',')))
         else:
             (col_name, col_value) = key.split('~')
-            matchc.add(MatcherList(config, key, col_name.strip(), col_value.strip(), matchers[key].split(',')))
+            matchc.add(MatcherList(config, key, col_name.strip(), col_value.strip(), config.get('matchers', key).split(',')))
+
+    config_file.close()
 
     return matchc
 
