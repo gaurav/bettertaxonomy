@@ -217,6 +217,9 @@ class ReconciliationMatcher(Matcher):
 # Look up this name in a file.
 import csv
 
+# Set the maximum field size to ... whatever.
+csv.field_size_limit(sys.maxsize)
+
 class FileMatcher(Matcher):
     # Creates a FileMatcher given a filename and other
     # configuration options.
@@ -238,6 +241,7 @@ class FileMatcher(Matcher):
             self.namecol = options['column_name']
 
         # TODO: attempt to guess the scientific name column.
+        # TODO: test whether this column actually exists in the source data.
 
         self.dialect = csv.excel
         if 'dialect' in options:
@@ -275,7 +279,7 @@ class FileMatcher(Matcher):
         if self.names == None:
             self.names = dict()
 
-            csvfile = open(self.filename, "r")
+            csvfile = open(self.filename, "rb")
             reader = csv.DictReader(csvfile, dialect=self.dialect)
             self.fieldnames = reader.fieldnames
 
