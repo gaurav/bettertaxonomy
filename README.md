@@ -12,8 +12,8 @@ Try `pip install requests` or `easy_install requests`.
 1. Without an internal database.
 
 ```
-$ python bettertaxonomy.py test_names.txt -f latin -c sources.example.ini
-Configuration loaded from sources.example.ini, 5 match lists configured.
+$ python bettertaxonomy.py example/test_names.txt -f latin -c example/sources.ini
+Configuration loaded from example/sources.ini, 5 match lists configured.
 latin,matched_scname,matched_acname,matched_url,matched_source,count,class
 Aëronautes,Aëronautes,,./data/LookupClassification.txt#331,Internal database,Aëronautes,Aves
 A.,A.,,./data/LookupClassification.txt#76,Internal database,-1,Aves
@@ -25,7 +25,7 @@ tiger,,,,,10,Mammalia
 Felix tigris,,,,,10,Mammalia
 oopsie,,,,,5,Mammalia
 
- - Processed on 06/25/14 on file test_names.txt in 0:00:05.042998 time.
+ - Processed on 06/25/14 on file example/test_names.txt in 0:00:05.042998 time.
  - Rows with names processed: 9 (1.78465 rows/second, 0.56033 seconds/row)
  - 4 names (44.44%) were matched against the following sources:
         Catalogue of Life (GB): 1 (25.00%)
@@ -37,12 +37,12 @@ oopsie,,,,,5,Mammalia
 2. With an internal database (which is already matched last):
 
 ```
-rgnt2-118-209-dhcp:bettertaxonomy vaidyagi$ python bettertaxonomy.py test_names.txt -f latin -c sources.example.ini -i example-internal.txt 
-Configuration loaded from sources.example.ini, 5 match lists configured.
+rgnt2-118-209-dhcp:bettertaxonomy vaidyagi$ python bettertaxonomy.py example/test_names.txt -f latin -c example/sources.ini -i example/internal.txt 
+Configuration loaded from example/sources.ini, 5 match lists configured.
 latin,matched_scname,matched_acname,matched_url,matched_source,count,class
 Aëronautes,Aëronautes,,./data/LookupClassification.txt#331,Internal database,Aëronautes,Aves
 A.,A.,,./data/LookupClassification.txt#76,Internal database,-1,Aves
-Arvicolinae,Arvicolinae,,example-internal.txt#1268,internal,1234567891234567891234567890,Mammlia
+Arvicolinae,Arvicolinae,,example/internal.txt#1268,internal,1234567891234567891234567890,Mammlia
 Eutamias minimus,"Eutamias minimus (Bachman, 1839)","Tamias minimus Bachman, 1839",http://gbif.org/species/119924203,(GBIF:Catalogue of Life)  7ddf754f-d193-4cc9-b351-99906754a03b,10,Mammalia
 Panthera tigris,"Panthera tigris Linnaeus, 1758",,http://gbif.org/species/103371328,"(GBIF:Mammal Species of the World, 3rd edition) Syst. Nat. , 10th ed. vol. 1 p. 41 672aca30-f1b5-43d3-8a2b-c1606125fa1b",20,Mammalia
 Felis tigris,,,,,30,Mammalia
@@ -50,7 +50,7 @@ tiger,,,,,10,Mammalia
 Felix tigris,,,,,10,Mammalia
 oopsie,,,,,5,Mammalia
 
- - Processed on 06/25/14 on file test_names.txt in 0:00:09.053734 time.
+ - Processed on 06/25/14 on file example/test_names.txt in 0:00:09.053734 time.
  - Rows with names processed: 9 (0.99406 rows/second, 1.00597 seconds/row)
  - 5 names (55.56%) were matched against the following sources:
 	Catalogue of Life (GB): 1 (20.00%)
@@ -63,20 +63,20 @@ oopsie,,,,,5,Mammalia
 Once the internal database has been updated, new searches will match against it.
 
 ```
-$ python bettertaxonomy.py test_names.txt -f latin -c sources.example.ini -i example-internal.txt 
-Configuration loaded from sources.example.ini, 5 match lists configured.
+$ python bettertaxonomy.py example/test_names.txt -f latin -c example/sources.ini -i example/internal.txt 
+Configuration loaded from example/sources.ini, 5 match lists configured.
 latin,matched_scname,matched_acname,matched_url,matched_source,count,class
 Aëronautes,Aëronautes,,./data/LookupClassification.txt#331,Internal database,Aëronautes,Aves
 A.,A.,,./data/LookupClassification.txt#76,Internal database,-1,Aves
-Arvicolinae,Arvicolinae,,example-internal.txt#1268,internal,1234567891234567891234567890,Mammlia
+Arvicolinae,Arvicolinae,,example/internal.txt#1268,internal,1234567891234567891234567890,Mammlia
 Eutamias minimus,"Eutamias minimus (Bachman, 1839)","Tamias minimus Bachman, 1839",http://gbif.org/species/119924203,(GBIF:Catalogue of Life)  7ddf754f-d193-4cc9-b351-99906754a03b,10,Mammalia
 Panthera tigris,"Panthera tigris Linnaeus, 1758",,http://gbif.org/species/103371328,"(GBIF:Mammal Species of the World, 3rd edition) Syst. Nat. , 10th ed. vol. 1 p. 41 672aca30-f1b5-43d3-8a2b-c1606125fa1b",20,Mammalia
-Felis tigris,Felis tigris,,example-internal.txt#16321,internal,30,Mammalia
-tiger,tiger,,example-internal.txt#16322,internal,10,Mammalia
-Felix tigris,Felix tigris,,example-internal.txt#16323,internal,10,Mammalia
-oopsie,oopsie,,example-internal.txt#16324,internal,5,Mammalia
+Felis tigris,Felis tigris,,example/internal.txt#16321,internal,30,Mammalia
+tiger,tiger,,example/internal.txt#16322,internal,10,Mammalia
+Felix tigris,Felix tigris,,example/internal.txt#16323,internal,10,Mammalia
+oopsie,oopsie,,example/internal.txt#16324,internal,5,Mammalia
 
- - Processed on 06/25/14 on file test_names.txt in 0:00:04.929067 time.
+ - Processed on 06/25/14 on file example/test_names.txt in 0:00:04.929067 time.
  - Rows with names processed: 9 (1.82590 rows/second, 0.54767 seconds/row)
  - 9 names (100.00%) were matched against the following sources:
 	Catalogue of Life (GB): 1 (11.11%)
@@ -90,7 +90,7 @@ oopsie,oopsie,,example-internal.txt#16324,internal,5,Mammalia
 ## Configuration file
 
 To use BetterTaxonomy, you need to set up a configuration file. An example file is 
-provided [in the distribution](https://github.com/gaurav/bettertaxonomy/blob/develop/sources.example.ini). 
+provided [in the distribution](https://github.com/gaurav/bettertaxonomy/blob/develop/example/sources.ini). 
 This tells the script which resources to query for species names. 
 
 Each configuration file contains a `matchers` section, which contains a set of 
