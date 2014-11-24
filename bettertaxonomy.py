@@ -69,7 +69,7 @@ if config_file is None:
 
 matchcontrol = matchcontroller.parseSources(config_file)
 
-sys.stderr.write("Configuration loaded from {:s}, {:d} match lists configured:\n\t{:s}".format(
+sys.stderr.write("Configuration loaded from {:s}, {:d} match lists configured:\n\t{:s}\n\n".format(
     config_file, len(matchcontrol), str(matchcontrol)
 ))
 
@@ -112,7 +112,7 @@ except csv.Error as e:
 
 # Check that the fieldname exists.
 if header.count(args.fieldname) == 0:
-    sys.stderr.write("Error: could not find field '{}' in file\n".format(args.fieldname))
+    sys.stderr.write("Error: could not find field '{}' in file {}\n".format(args.fieldname, input.name))
     exit(1)
 
 # Create new columns in the output file to store:
