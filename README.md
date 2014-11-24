@@ -133,7 +133,7 @@ accepts the following properties:
 * `name`: The name of this file matcher.
 * `file`: The location of a file to load.
 * `dialect`: [The CSV dialect](https://docs.python.org/3/library/csv.html#csv.Dialect) the file uses. Use `excel` for most CSV files, and `excel_tab` for most tab-delimited files.
-* `column_name`: The name of the column in the CSV file that contains the scientific name.
+* `scientificName_column`: The name of the column in the CSV file that contains the scientific name.
 
 An example of a file matcher is as follows:
 
