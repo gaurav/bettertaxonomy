@@ -1,0 +1,5 @@
+"scientificName","correctName","Family","Order","Class","Phylum","Kingdom","source","standard","checked","error"
+"Aphelocama","Aphelocoma","Corvidae","Passeriformes","Aves","Chordata","Animalia","ITIS",0,1,"Genus misspelled."
+"Aphelocephala","Aphelocephala","Pardalotidae","Passeriformes","Aves","Chordata","Animalia","ITIS",1,1,
+"Aphelocoma","Aphelocoma","Corvidae","Passeriformes","Aves","Chordata","Animalia","ITIS",1,1,
+"Apheloeowa","Aphelocoma","Corvidae","Passeriformes","Aves","Chordata","Animalia","ITIS",0,1,"Genus misspelled."

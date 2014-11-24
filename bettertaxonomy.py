@@ -195,10 +195,13 @@ for row in reader:
         matched_acname = sorted(matched_acname, key=matched_acname.get)[0]
 
     # Add details to the row we're writing out.
-    row['matched_scname'] = matched_scname.encode("utf-8") if matched_scname is not None else ""
-    row['matched_acname'] = matched_acname.encode("utf-8") if matched_acname is not None else ""
-    row['matched_url'] = matched_url.encode("utf-8") if matched_url is not None else ""
-    row['matched_source'] = matched_source.encode("utf-8") if matched_source is not None else ""
+    try:
+        row['matched_scname'] = matched_scname.encode("utf-8") if matched_scname is not None else ""
+        row['matched_acname'] = matched_acname.encode("utf-8") if matched_acname is not None else ""
+        row['matched_url'] = matched_url.encode("utf-8") if matched_url is not None else ""
+        row['matched_source'] = matched_source.encode("utf-8") if matched_source is not None else ""
+    except UnicodeDecodeError as e:
+        raise RuntimeError("Could not decode unicode name from source " + matched_source.encode('utf-8') + ": " + str(e))
 
     # Write out the row.
     output.writerow(row)
