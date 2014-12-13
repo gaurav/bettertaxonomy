@@ -6,6 +6,9 @@
 
 import sys
 
+# Turn to true to activate debug output.
+FLAG_DEBUG = False
+
 # The root class of all Matchers. Use Matcher.build(...) to create a new Matcher
 # subclass for a given configuration.
 class Matcher(object):
@@ -38,7 +41,7 @@ class Matcher(object):
             elif "gbif_id" in section:
                 return GBIFMatcher(name, config.get(matcher_section, 'gbif_id'), section)
             elif "gna_id" in section:
-                return GNAMatcher(name, config.get(matcher_section, 'gna_id'), section)
+                return GNAMatcher(name, re.split('\s*,\s*', config.get(matcher_section, 'gna_id')), section)
             elif "file" in section:
                 return FileMatcher(name, config.get(matcher_section, 'file'), section)
             else:
@@ -146,25 +149,17 @@ class GBIFMatcher(Matcher):
 import urllib
 import urllib2
 import json
+import re
 
 class GNAMatcher(Matcher):
     # Creates an object given a GNA ID and other options.
     # No other options are currently recognized.
-    def __init__(self, name, gna_id, options):
+    def __init__(self, name, gna_ids, options):
         if 'name' in options:
             self.name = options['name']
         else:
             self.name = name
-        self.gna_id = []
-        if isinstance(gna_id, basestring):
-            # Split comma separated strings.
-            if "," in gna_id:
-                self.gna_id = re.split('/\s*,/', gna_id)
-            else:
-                self.gna_id = gna_id
-        else:
-            # Assume that gna_id is already a list.
-            self.gna_id = gna_id
+        self.gna_ids = gna_ids
         self.options = options
 
     # Returns the name of this matcher, as used in the configuration file.
@@ -177,17 +172,29 @@ class GNAMatcher(Matcher):
         stream = urllib2.urlopen("http://resolver.globalnames.org/name_resolvers.json",
             data = urllib.urlencode({
                 "names": scname,
-                "data_source_ids": "|".join(self.gna_id),
+                "preferred_data_sources": "|".join(self.gna_ids),
                 "best_match_only": "true"
             })
         )
         results = json.load(stream)
         stream.close()
 
+        if FLAG_DEBUG:
+            print("QUERY: " + urllib.urlencode({
+                "names": scname,
+                "preferred_data_sources": "|".join(self.gna_ids),
+                "best_match_only": "true"
+            }))
+
         if results['status'] != 'success':
+            # TODO: raise error
             return None
 
-        matches = results['data'][0]['results']
+        data = results['data']
+        if len(data) == 0 or 'results' not in data[0]:
+            return None
+
+        matches = data[0]['preferred_results']
         if len(matches) == 0:
             return None
 
@@ -202,7 +209,7 @@ class GNAMatcher(Matcher):
             best_match['gni_uuid'],
             best_match['canonical_form'],
             None, # Accepted name
-            "GNA:%d" % (best_match['data_source_id'])
+            "GNA:%d (%s)" % (best_match['data_source_id'], best_match['data_source_title'])
         )
 
         return result
@@ -281,9 +288,9 @@ class ReconciliationMatcher(Matcher):
 
         return result
 
-    # Returns a string object; we use "(RM)" after the name given to us.
+    # Returns a string object; we use "(RECON)" after the name given to us.
     def __str__(self):
-        return self.name + " (RM)"
+        return self.name + " (RECON)"
 
 # Look up this name in a file.
 import csv

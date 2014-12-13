@@ -159,3 +159,15 @@ An example of a GBIF matcher is as follows:
 name = Mammal Species of the World, 3rd edition
 gbif_id = 672aca30-f1b5-43d3-8a2b-c1606125fa1b
 ```
+
+### GNA matcher
+
+A GNA matcher uses the [Global Names Architecture Resolver](http://resolver.globalnames.org/) to match names against one or more [checklists imported into GNA](http://resolver.globalnames.org/data_sources).
+
+An example of a GNA matcher is as follows:
+
+```ini
+[matcher:msw3_itis_col_paleodb_ncbi]                                            
+name = MSW3, ITIS, CoL, PaleoDB, NCBI                                           
+gna_id = 174, 3, 1, 172, 4
+```

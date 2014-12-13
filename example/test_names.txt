@@ -1,4 +1,6 @@
 latin,count,class
+Bassaricyon neblina,1,Mammalia
+Pseudacris sierra,1,Amphibia
 Felis tigris,30,Mammalia
 Aëronautes,Aëronautes,Aves
 A.,-1,Aves
