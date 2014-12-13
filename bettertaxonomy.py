@@ -2,11 +2,12 @@
 #
 # bettertaxonomy.py - matching multiple taxonomic sources
 # 
-# Better Taxonomy is a script for matching multiple taxonomic sources: 
-# it can match names from a CSV file against other CSV files, against
-# GBIF checklists, and against TaxRefine. It also manages an internal
-# list, that is automatically updated with names that could not be 
-# matched. Use sources.example.ini to create a configuration file.
+# Better Taxonomy is a script for matching data containing scientific names
+# against multiple taxonomic sources: it can match names from a CSV file 
+# against other CSV files, against GBIF checklists, and against TaxRefine. 
+# It also manages an internal list, that is automatically updated with names 
+# that could not be matched. Use sources.example.ini to create a configuration 
+# file.
 # 
 # Find out more at https://github.com/gaurav/bettertaxonomy
 # 
@@ -51,6 +52,11 @@ cmdline.add_argument('-internal',
     type=str,
     help='Internal list of name corrections (must be a CSV file)')
 
+cmdline.add_argument('-output',
+    nargs=1,
+    type=str,
+    help='Output file')
+
 args = cmdline.parse_args()
 
 # Set up the input stream.
@@ -61,6 +67,13 @@ if args.input is None:
 else:
     #input = codecs.open(args.input, "r", "utf-8")
     input = open(args.input, "r")
+
+# Set up the output stream.
+output_file = None
+if args.output is None:
+    output_file = sys.stdout
+else:
+    output_file = open(args.output, "w")
 
 # Load the config file.
 config_file = args.config
@@ -127,7 +140,7 @@ output_header.insert(output_header.index(args.fieldname) + 3, 'matched_url')
 output_header.insert(output_header.index(args.fieldname) + 4, 'matched_source')
 
 # Create a csv.writer for writing this file to output.
-output = csv.DictWriter(sys.stdout, output_header, dialect)
+output = csv.DictWriter(output_file, output_header, dialect)
 output.writeheader()
 
 #
