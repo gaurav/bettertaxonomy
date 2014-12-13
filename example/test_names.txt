@@ -1,10 +1,12 @@
 latin,count,class
+Bassaricyon neblina,1,Mammalia
+Pseudacris sierra,1,Amphibia
+Felis tigris,30,Mammalia
 Aëronautes,Aëronautes,Aves
 A.,-1,Aves
 Arvicolinae,1234567891234567891234567890,Mammlia
 Eutamias minimus,10,Mammalia
 Panthera tigris,20,Mammalia
-Felis tigris,30,Mammalia
 tiger,10,Mammalia
 Felix tigris,10,Mammalia
 oopsie,5,Mammalia
